@@ -118,6 +118,31 @@ const table = useVueTable({
         </TableRow>
       </TableHeader>
       <TableBody>
+        <TableRow
+          v-for="headerGroup in table.getHeaderGroups()"
+          :key="`${headerGroup.id}-filters`"
+          class="bg-card hover:bg-card"
+        >
+          <TableHead
+            v-for="(header, index) in headerGroup.headers"
+            :key="`${header.id}-filter`"
+            class="overflow-hidden border-r py-1.5 last:border-none"
+            :style="{
+              minWidth: header.column.columnDef.minSize,
+              width: index === headerGroup.headers.length - 1 ? 'auto' : `calc(var(--header-${header.id}-size) * 1px)`,
+              maxWidth: index === headerGroup.headers.length - 1 ? undefined : header.column.columnDef.maxSize,
+            }"
+          >
+            <SearchInput
+              v-if="header.column.getCanFilter()"
+              :value="(header.column.getFilterValue() as string) ?? ''"
+              :on-change="(v) => header.column.setFilterValue(v)"
+              :on-clear="() => header.column.setFilterValue('')"
+              size="sm"
+              class="w-35"
+            />
+          </TableHead>
+        </TableRow>
         <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
           <TableCell
             v-for="cell in row.getVisibleCells()"
