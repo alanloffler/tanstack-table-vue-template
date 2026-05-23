@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components";
+import { SortableIcon } from "@/components";
 
 import type { ColumnDef } from "@tanstack/vue-table";
-import { onMounted, ref } from "vue";
+import { h, onMounted, ref } from "vue";
 
 import { DataService, type ICharacter } from "@/services/data.service";
 
 const data = ref<ICharacter[]>([]);
-const delay = ref<number>(0);
+const delay = ref<number>(4000);
 const loading = ref<boolean>(false);
 
 onMounted(async () => {
@@ -28,27 +29,36 @@ const columns: ColumnDef<ICharacter>[] = [
     accessorKey: "id",
     id: "ID",
     size: 20,
+    header: ({ column }) =>
+      h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
   {
     accessorKey: "name",
     id: "Nombre",
     size: 80,
+    header: ({ column }) =>
+      h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
   {
     accessorKey: "gender",
     id: "Género",
     size: 40,
-    enableColumnFilter: false,
+    header: ({ column }) =>
+      h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
   {
     accessorKey: "age",
     id: "Edad",
     size: 40,
+    header: ({ column }) =>
+      h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
   {
     accessorKey: "occupation",
     id: "Ocupación",
     minSize: 200,
+    header: ({ column }) =>
+      h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
 ];
 </script>
