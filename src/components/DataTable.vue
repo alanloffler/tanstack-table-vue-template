@@ -1,21 +1,43 @@
 <script setup lang="ts" generic="TData, TValue">
-import { getCoreRowModel, useVueTable, FlexRender, type ColumnDef } from "@tanstack/vue-table";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+
+import { computed, h } from "vue";
+import { getCoreRowModel, useVueTable, FlexRender, type ColumnDef } from "@tanstack/vue-table";
 
 interface IProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
   data?: TData[];
+  defaultPageSize?: number;
+  loading?: boolean;
 }
 
-const props = defineProps<IProps<TData, TValue>>();
+const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
+  defaultPageSize: 10,
+  loading: false,
+});
+
+const tableData = computed<TData[]>(() => {
+  if (props.loading) return Array(props.defaultPageSize).fill({}) as TData[];
+  return props.data ?? [];
+});
+
+const tableColumns = computed(() => {
+  if (props.loading) {
+    return (props.columns ?? []).map((col) => ({
+      ...col,
+      cell: () => h(Skeleton, { class: "h-6 w-full" }),
+    }));
+  }
+  return props.columns ?? [];
+});
 
 const table = useVueTable({
   get data() {
-    return props.data ?? [];
+    return tableData.value;
   },
   get columns() {
-    return props.columns ?? [];
+    return tableColumns.value;
   },
   getCoreRowModel: getCoreRowModel(),
 });
