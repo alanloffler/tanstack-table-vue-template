@@ -77,8 +77,9 @@ const columns: ColumnDef<ICharacter>[] = [
 <template>
   <div class="bg-background text-foreground min-h-screen">
     <header class="border-border border-b">
-      <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+      <div class="mx-auto flex h-16 max-w-6xl flex-col items-start justify-center gap-0 px-6">
         <h1 class="text-lg font-semibold tracking-tight">Tanstack Table</h1>
+        <span class="text-muted-foreground text-sm tracking-tight">Vue version</span>
       </div>
     </header>
     <main class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
