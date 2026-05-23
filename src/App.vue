@@ -8,7 +8,7 @@ import { onMounted, ref } from "vue";
 import { DataService, type ICharacter } from "@/services/data.service";
 
 const data = ref<ICharacter[]>([]);
-const delay = ref<number>(4000);
+const delay = ref<number>(0);
 const loading = ref<boolean>(false);
 
 onMounted(async () => {
