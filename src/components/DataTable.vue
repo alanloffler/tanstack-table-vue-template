@@ -11,18 +11,22 @@ import {
   type ColumnDef,
   getPaginationRowModel,
   type PaginationState,
+  type SortingState,
+  getSortedRowModel,
 } from "@tanstack/vue-table";
 
 interface IProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
   data?: TData[];
   defaultPageSize?: number;
+  defaultSorting?: SortingState;
   loading?: boolean;
   pageSizes?: number[];
 }
 
 const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
   defaultPageSize: 5,
+  defaultSorting: () => [],
   loading: false,
   pageSizes: () => [5, 10, 20, 50],
 });
@@ -31,6 +35,8 @@ const pagination = ref<PaginationState>({
   pageIndex: 0,
   pageSize: props.defaultPageSize,
 });
+
+const sorting = ref<SortingState>(props.defaultSorting);
 
 const tableData = computed<TData[]>(() => {
   if (props.loading) return Array(props.defaultPageSize).fill({}) as TData[];
@@ -58,12 +64,19 @@ const table = useVueTable({
     get pagination() {
       return pagination.value;
     },
+    get sorting() {
+      return sorting.value;
+    },
   },
   onPaginationChange: (updater) => {
     pagination.value = typeof updater === "function" ? updater(pagination.value) : updater;
   },
+  onSortingChange: (updater) => {
+    sorting.value = typeof updater === "function" ? updater(sorting.value) : updater;
+  },
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
+  getSortedRowModel: getSortedRowModel(),
 });
 </script>
 
