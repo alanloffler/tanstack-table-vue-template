@@ -109,6 +109,6 @@ const table = useVueTable({
         </TableRow>
       </TableBody>
     </Table>
-    <Pagination :table="table" :page-sizes="pageSizes" />
+    <Pagination v-if="!loading" :table="table" :page-sizes="pageSizes" />
   </section>
 </template>
