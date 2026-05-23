@@ -1,22 +1,71 @@
 <script setup lang="ts">
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { DataTable } from "@/components";
+
+import type { ColumnDef } from "@tanstack/vue-table";
+import { onMounted, ref } from "vue";
+
+import { DataService, type ICharacter } from "@/services/data.service";
+
+const data = ref<ICharacter[]>([]);
+const delay = ref<number>(0);
+const loading = ref<boolean>(false);
+
+onMounted(async () => {
+  try {
+    if (delay.value > 0) loading.value = true;
+    const query = await DataService.get(0);
+    data.value = query;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+});
+
+const columns: ColumnDef<ICharacter>[] = [
+  {
+    accessorKey: "id",
+    id: "ID",
+    size: 20,
+  },
+  {
+    accessorKey: "name",
+    id: "Nombre",
+    size: 80,
+  },
+  {
+    accessorKey: "gender",
+    id: "Género",
+    size: 40,
+    enableColumnFilter: false,
+  },
+  {
+    accessorKey: "age",
+    id: "Edad",
+    size: 40,
+  },
+  {
+    accessorKey: "occupation",
+    id: "Ocupación",
+    minSize: 200,
+  },
+];
 </script>
 
 <template>
   <div class="bg-background text-foreground min-h-screen">
     <header class="border-border border-b">
-      <div
-        class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6"
-      >
+      <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <h1 class="text-lg font-semibold tracking-tight">Tanstack Table</h1>
       </div>
     </header>
     <main class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
       <Card class="flex flex-col gap-3">
         <CardHeader>
-          <CardTitle>Opciones de la tabla</CardTitle>
+          <CardTitle>Personajes de los Simpsons</CardTitle>
         </CardHeader>
-        <CardContent> Content </CardContent>
+        <CardContent><DataTable :columns="columns" :data="data" /></CardContent>
       </Card>
     </main>
   </div>
