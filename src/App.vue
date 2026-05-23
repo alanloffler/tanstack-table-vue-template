@@ -9,7 +9,7 @@ import { h, onMounted, ref } from "vue";
 import { DataService, type ICharacter } from "@/services/data.service";
 
 const data = ref<ICharacter[]>([]);
-const delay = ref<number>(4000);
+const delay = ref<number>(0);
 const loading = ref<boolean>(false);
 
 onMounted(async () => {
@@ -52,6 +52,7 @@ const columns: ColumnDef<ICharacter>[] = [
     size: 40,
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
+    cell: ({ row }) => h("span", row.original.age ?? "-"),
   },
   {
     accessorKey: "occupation",
