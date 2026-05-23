@@ -6,11 +6,18 @@ import { SortableIcon } from "@/components";
 import type { ColumnDef } from "@tanstack/vue-table";
 import { h, onMounted, ref } from "vue";
 
+import type { ITableOptions } from "@/components/DataTable.vue";
 import { DataService, type ICharacter } from "@/services/data.service";
+
+const INIT_OPTS: ITableOptions = {
+  columnSearch: false,
+  globalSearch: false,
+};
 
 const data = ref<ICharacter[]>([]);
 const delay = ref<number>(0);
 const loading = ref<boolean>(false);
+const tableOptions = ref<ITableOptions>(INIT_OPTS);
 
 onMounted(async () => {
   try {
@@ -79,7 +86,9 @@ const columns: ColumnDef<ICharacter>[] = [
         <CardHeader>
           <CardTitle>Personajes de los Simpsons</CardTitle>
         </CardHeader>
-        <CardContent><DataTable :columns="columns" :data="data" :loading="loading" /></CardContent>
+        <CardContent>
+          <DataTable :columns="columns" :data="data" :loading="loading" :options="tableOptions" />
+        </CardContent>
       </Card>
     </main>
   </div>
