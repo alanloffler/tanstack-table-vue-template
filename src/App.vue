@@ -8,13 +8,13 @@ import { onMounted, ref } from "vue";
 import { DataService, type ICharacter } from "@/services/data.service";
 
 const data = ref<ICharacter[]>([]);
-const delay = ref<number>(0);
+const delay = ref<number>(4000);
 const loading = ref<boolean>(false);
 
 onMounted(async () => {
   try {
     if (delay.value > 0) loading.value = true;
-    const query = await DataService.get(0);
+    const query = await DataService.get(delay.value);
     data.value = query;
   } catch (error) {
     console.error(error);
@@ -65,7 +65,7 @@ const columns: ColumnDef<ICharacter>[] = [
         <CardHeader>
           <CardTitle>Personajes de los Simpsons</CardTitle>
         </CardHeader>
-        <CardContent><DataTable :columns="columns" :data="data" /></CardContent>
+        <CardContent><DataTable :columns="columns" :data="data" :loading="loading" /></CardContent>
       </Card>
     </main>
   </div>
