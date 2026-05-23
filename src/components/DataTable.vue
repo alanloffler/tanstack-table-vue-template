@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="TData, TValue">
 import { Pagination } from "@/components";
+import { SearchInput } from "@/components";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
@@ -13,6 +14,7 @@ import {
   type PaginationState,
   type SortingState,
   getSortedRowModel,
+  getFilteredRowModel,
 } from "@tanstack/vue-table";
 
 interface IProps<TData, TValue> {
@@ -31,11 +33,11 @@ const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
   pageSizes: () => [5, 10, 20, 50],
 });
 
+const globalFilter = ref<string>("");
 const pagination = ref<PaginationState>({
   pageIndex: 0,
   pageSize: props.defaultPageSize,
 });
-
 const sorting = ref<SortingState>(props.defaultSorting);
 
 const tableData = computed<TData[]>(() => {
@@ -61,12 +63,18 @@ const table = useVueTable({
     return tableColumns.value;
   },
   state: {
+    get globalFilter() {
+      return globalFilter.value;
+    },
     get pagination() {
       return pagination.value;
     },
     get sorting() {
       return sorting.value;
     },
+  },
+  onGlobalFilterChange: (updater) => {
+    globalFilter.value = typeof updater === "function" ? updater(globalFilter.value) : updater;
   },
   onPaginationChange: (updater) => {
     pagination.value = typeof updater === "function" ? updater(pagination.value) : updater;
@@ -75,13 +83,28 @@ const table = useVueTable({
     sorting.value = typeof updater === "function" ? updater(sorting.value) : updater;
   },
   getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
+
+  globalFilterFn: "includesString",
 });
 </script>
 
 <template>
   <section class="flex flex-col gap-3">
+    <div class="flex items-center justify-end gap-5">
+      <SearchInput
+        :value="globalFilter"
+        :on-change="(v: string | number) => table.setGlobalFilter(v)"
+        :on-clear="
+          () => {
+            table.setGlobalFilter('');
+            globalFilter = '';
+          }
+        "
+      />
+    </div>
     <Table className="dark:bg-card table-fixed">
       <TableHeader class="dark:bg-primary-foreground/50 bg-neutral-100">
         <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
