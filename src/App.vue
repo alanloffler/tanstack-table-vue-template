@@ -29,6 +29,7 @@ const columns: ColumnDef<ICharacter>[] = [
     accessorKey: "id",
     id: "ID",
     size: 20,
+    enableColumnFilter: false,
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
@@ -43,6 +44,7 @@ const columns: ColumnDef<ICharacter>[] = [
     accessorKey: "gender",
     id: "Género",
     size: 40,
+    enableColumnFilter: false,
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
@@ -50,6 +52,7 @@ const columns: ColumnDef<ICharacter>[] = [
     accessorKey: "age",
     id: "Edad",
     size: 40,
+    enableColumnFilter: false,
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
     cell: ({ row }) => h("span", row.original.age ?? "-"),
