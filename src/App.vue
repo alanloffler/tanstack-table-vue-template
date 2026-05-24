@@ -141,7 +141,13 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
           <CardTitle>Personajes de los Simpsons</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable :columns="columns" :data="data" :loading="loading" :options="tableOptions" />
+          <DataTable
+            :columns="columns"
+            :data="data"
+            :loading="loading"
+            :options="tableOptions"
+            storageKey="characters"
+          />
         </CardContent>
       </Card>
     </main>
