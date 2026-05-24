@@ -5,7 +5,7 @@ import { DataTable } from "@/components";
 import { SortableIcon } from "@/components";
 
 import type { ColumnDef } from "@tanstack/vue-table";
-import { h, onMounted, ref } from "vue";
+import { h, ref, watch } from "vue";
 
 import type { ITableOptions } from "@/components/DataTable.vue";
 import { DataService, type ICharacter } from "@/services/data.service";
@@ -14,30 +14,24 @@ const INIT_OPTS: ITableOptions = {
   columnSearch: true,
   globalSearch: true,
   hideColumns: true,
+  simulateAsync: false,
 };
 
 const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label: string }[] }[] = [
   {
     name: "columns",
-    options: [
-      {
-        key: "hideColumns",
-        label: "Ocultar columnas",
-      },
-    ],
+    options: [{ key: "hideColumns", label: "Ocultar columnas" }],
   },
   {
     name: "search",
     options: [
-      {
-        key: "columnSearch",
-        label: "Buscar en columnas",
-      },
-      {
-        key: "globalSearch",
-        label: "Búsqueda globalmente",
-      },
+      { key: "columnSearch", label: "Buscar en columnas" },
+      { key: "globalSearch", label: "Búsqueda globalmente" },
     ],
+  },
+  {
+    name: "async",
+    options: [{ key: "simulateAsync", label: "Simular conexión lenta" }],
   },
 ];
 
@@ -46,17 +40,7 @@ const delay = ref<number>(0);
 const loading = ref<boolean>(false);
 const tableOptions = ref<ITableOptions>(INIT_OPTS);
 
-onMounted(async () => {
-  try {
-    if (delay.value > 0) loading.value = true;
-    const query = await DataService.get(delay.value);
-    data.value = query;
-  } catch (error) {
-    console.error(error);
-  } finally {
-    loading.value = false;
-  }
-});
+watch(delay, (val) => getData(val), { immediate: true });
 
 const columns: ColumnDef<ICharacter>[] = [
   {
@@ -100,7 +84,22 @@ const columns: ColumnDef<ICharacter>[] = [
   },
 ];
 
+async function getData(delay: number): Promise<any> {
+  try {
+    if (delay > 0) loading.value = true;
+    const query = await DataService.get(delay);
+    data.value = query;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+}
+
 function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K]): void {
+  if (key === "simulateAsync") {
+    delay.value = value ? 4000 : 0;
+  }
   tableOptions.value = {
     ...tableOptions.value,
     [key]: value,
