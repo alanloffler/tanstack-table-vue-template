@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DataTable } from "@/components";
 import { SortableIcon } from "@/components";
 
@@ -13,6 +14,22 @@ const INIT_OPTS: ITableOptions = {
   columnSearch: false,
   globalSearch: false,
 };
+
+const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label: string }[] }[] = [
+  {
+    name: "search",
+    options: [
+      {
+        key: "columnSearch",
+        label: "Buscar en columnas",
+      },
+      {
+        key: "globalSearch",
+        label: "Búsqueda globalmente",
+      },
+    ],
+  },
+];
 
 const data = ref<ICharacter[]>([]);
 const delay = ref<number>(0);
@@ -72,6 +89,13 @@ const columns: ColumnDef<ICharacter>[] = [
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
 ];
+
+function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K]): void {
+  tableOptions.value = {
+    ...tableOptions.value,
+    [key]: value,
+  };
+}
 </script>
 
 <template>
@@ -83,6 +107,25 @@ const columns: ColumnDef<ICharacter>[] = [
       </div>
     </header>
     <main class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
+      <Card class="flex flex-col gap-3">
+        <CardHeader>
+          <CardTitle>Opciones de la tabla</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="flex gap-10 text-sm">
+            <ul v-for="group in OPTION_GROUPS" :key="group.name" class="flex flex-col gap-3">
+              <li v-for="opt in group.options" :key="opt.key" class="flex items-center gap-2">
+                <Checkbox
+                  :id="opt.key"
+                  :model-value="tableOptions[opt.key] ?? false"
+                  @update:model-value="(v) => setOption(opt.key, v === true)"
+                />
+                <label :for="opt.key">{{ opt.label }}</label>
+              </li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
       <Card class="flex flex-col gap-3">
         <CardHeader>
           <CardTitle>Personajes de los Simpsons</CardTitle>
