@@ -1,7 +1,8 @@
 <script setup lang="ts" generic="TData, TValue">
-import { Columns3Cog, RefreshCcw } from "@lucide/vue";
+import { Columns3Cog, GripVertical, RefreshCcw } from "@lucide/vue";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { DraggableColumnHeader } from "@/components";
 import { Pagination } from "@/components";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchInput } from "@/components";
@@ -11,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import { buttonVariants } from "@/components/ui/button";
 import { computed, h, ref, watch } from "vue";
+import { DragDropProvider, DragOverlay, type DragEndEvent } from "@dnd-kit/vue";
 import {
   FlexRender,
   getCoreRowModel,
@@ -46,6 +48,7 @@ const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
 
 const tableStore = useTableStore();
 
+const columnOrder = ref<string[]>(props.storageKey ? (tableStore.tables[props.storageKey]?.columnOrder ?? []) : []);
 const columnVisibility = ref(props.storageKey ? (tableStore.tables[props.storageKey]?.columnVisibility ?? {}) : {});
 const globalFilter = ref<string>("");
 const pagination = ref<PaginationState>({
@@ -79,6 +82,9 @@ const table = useVueTable({
     return tableColumns.value;
   },
   state: {
+    get columnOrder() {
+      return columnOrder.value;
+    },
     get columnVisibility() {
       return columnVisibility.value;
     },
@@ -91,6 +97,10 @@ const table = useVueTable({
     get sorting() {
       return sorting.value;
     },
+  },
+  onColumnOrderChange: (updater) => {
+    columnOrder.value = typeof updater === "function" ? updater(columnOrder.value) : updater;
+    if (props.storageKey) tableStore.setColumnOrder(props.storageKey, columnOrder.value);
   },
   onColumnVisibilityChange: (updater) => {
     columnVisibility.value = typeof updater === "function" ? updater(columnVisibility.value) : updater;
@@ -119,10 +129,33 @@ watch(
     if (props.storageKey) columnVisibility.value = val ?? {};
   },
 );
+
+watch(
+  () => (props.storageKey ? tableStore.tables[props.storageKey]?.columnOrder : undefined),
+  (val) => {
+    if (props.storageKey) columnOrder.value = val ?? [];
+  },
+);
+
+function handleDragEnd(event: DragEndEvent) {
+  const { source, target } = event.operation;
+  if (!source || !target || source.id === target.id) return;
+
+  const columnIds = table.getAllLeafColumns().map((c) => c.id);
+  const oldIndex = columnIds.indexOf(source.id as string);
+  const newIndex = columnIds.indexOf(target.id as string);
+  if (oldIndex === -1 || newIndex === -1) return;
+
+  const newOrder = [...columnIds];
+  const [moved] = newOrder.splice(oldIndex, 1);
+  newOrder.splice(newIndex, 0, moved);
+  table.setColumnOrder(newOrder);
+}
 </script>
 
 <script lang="ts">
 export interface ITableOptions {
+  columnOrder?: boolean;
   columnSearch?: boolean;
   globalSearch?: boolean;
   hideColumns?: boolean;
@@ -185,59 +218,75 @@ export interface ITableOptions {
         "
       />
     </div>
-    <Table className="dark:bg-card table-fixed" style="width: 100%">
-      <TableHeader class="dark:bg-primary-foreground/50 bg-neutral-100">
-        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-          <TableHead v-for="header in headerGroup.headers" :key="header.id" class="relative overflow-hidden py-2.5">
-            <FlexRender
-              v-if="!header.isPlaceholder"
-              :render="header.column.columnDef.header"
-              :props="header.getContext()"
-            />
-          </TableHead>
-        </TableRow>
-        <TableRow
-          v-if="options?.columnSearch"
-          v-for="headerGroup in table.getHeaderGroups()"
-          :key="`${headerGroup.id}-filters`"
-          class="bg-card hover:bg-card"
-        >
-          <TableHead
-            v-for="(header, index) in headerGroup.headers"
-            :key="`${header.id}-filter`"
-            class="overflow-hidden border-r py-1.5 last:border-none"
-            :style="{
-              minWidth: header.column.columnDef.minSize,
-              width: index === headerGroup.headers.length - 1 ? 'auto' : `calc(var(--header-${header.id}-size) * 1px)`,
-              maxWidth: index === headerGroup.headers.length - 1 ? undefined : header.column.columnDef.maxSize,
-            }"
+    <DragDropProvider @drag-end="handleDragEnd">
+      <Table className="dark:bg-card table-fixed" style="width: 100%">
+        <TableHeader class="dark:bg-primary-foreground/50 bg-neutral-100">
+          <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+            <template v-for="(header, index) in headerGroup.headers" :key="header.id">
+              <DraggableColumnHeader v-if="options?.columnOrder" :header="header" :index="index" />
+              <TableHead v-else class="relative overflow-hidden py-2.5">
+                <FlexRender
+                  v-if="!header.isPlaceholder"
+                  :render="header.column.columnDef.header"
+                  :props="header.getContext()"
+                />
+              </TableHead>
+            </template>
+          </TableRow>
+          <TableRow
+            v-if="options?.columnSearch"
+            v-for="headerGroup in table.getHeaderGroups()"
+            :key="`${headerGroup.id}-filters`"
+            class="bg-card hover:bg-card"
           >
-            <SearchInput
-              v-if="header.column.getCanFilter()"
-              :value="(header.column.getFilterValue() as string) ?? ''"
-              :on-change="(v) => header.column.setFilterValue(v)"
-              :on-clear="() => header.column.setFilterValue('')"
-              size="sm"
-              class="w-35"
-            />
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
-          <TableCell
-            v-for="cell in row.getVisibleCells()"
-            :key="cell.id"
-            class="overflow-hidden border-r whitespace-normal last:border-none"
+            <TableHead
+              v-for="(header, index) in headerGroup.headers"
+              :key="`${header.id}-filter`"
+              class="overflow-hidden border-r py-1.5 last:border-none"
+              :style="{
+                minWidth: header.column.columnDef.minSize,
+                width:
+                  index === headerGroup.headers.length - 1 ? 'auto' : `calc(var(--header-${header.id}-size) * 1px)`,
+                maxWidth: index === headerGroup.headers.length - 1 ? undefined : header.column.columnDef.maxSize,
+              }"
+            >
+              <SearchInput
+                v-if="header.column.getCanFilter()"
+                :value="(header.column.getFilterValue() as string) ?? ''"
+                :on-change="(v) => header.column.setFilterValue(v)"
+                :on-clear="() => header.column.setFilterValue('')"
+                size="sm"
+                class="w-35"
+              />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
+            <TableCell
+              v-for="cell in row.getVisibleCells()"
+              :key="cell.id"
+              class="overflow-hidden border-r whitespace-normal last:border-none"
+            >
+              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            </TableCell>
+          </TableRow>
+          <TableRow v-if="table.getRowModel().rows.length === 0">
+            <TableCell :colSpan="columns?.length ?? 1" class="h-24 text-center"> Sin resultados </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+      <DragOverlay>
+        <template #default="{ source }">
+          <div
+            class="bg-background flex min-h-10.5 w-fit items-center gap-2 rounded-md border px-2 py-1 pr-4 text-sm shadow-lg"
           >
-            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-          </TableCell>
-        </TableRow>
-        <TableRow v-if="table.getRowModel().rows.length === 0">
-          <TableCell :colSpan="columns?.length ?? 1" class="h-24 text-center"> Sin resultados </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+            <GripVertical class="text-muted-foreground h-4 w-4" />
+            {{ source.id }}
+          </div>
+        </template>
+      </DragOverlay>
+    </DragDropProvider>
     <Pagination v-if="!loading" :table="table" :page-sizes="pageSizes" />
   </section>
 </template>
