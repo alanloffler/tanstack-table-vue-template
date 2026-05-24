@@ -221,7 +221,7 @@ export interface ITableOptions {
             <TooltipContent>Exportar XLS</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <TooltipProvider v-if="options?.hideColumns">
+        <TooltipProvider v-if="options?.columnOrder || options?.hideColumns">
           <Tooltip>
             <TooltipTrigger
               :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
