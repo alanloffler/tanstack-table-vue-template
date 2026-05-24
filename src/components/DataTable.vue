@@ -3,6 +3,7 @@ import { Columns3Cog, GripVertical, RefreshCcw } from "@lucide/vue";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { DraggableColumnHeader } from "@/components";
+import { FilePdf } from "@/components/icons";
 import { Pagination } from "@/components";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchInput } from "@/components";
@@ -28,12 +29,18 @@ import { isSortable } from "@dnd-kit/vue/sortable";
 
 import { cn } from "@/lib/utils";
 import { useTableStore } from "@/stores/table.store";
+import { exportTableToPdf, type TPdfFormatter } from "@/utils/export-table-pdf.utils";
 
 interface IProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
   data?: TData[];
   defaultPageSize?: number;
   defaultSorting?: SortingState;
+  exportPdfConfig?: {
+    filename?: string;
+    formatters?: Record<string, TPdfFormatter<TData>>;
+    title?: string;
+  };
   loading?: boolean;
   options?: ITableOptions;
   pageSizes?: number[];
@@ -157,6 +164,7 @@ function handleDragEnd(event: DragEndEvent) {
 export interface ITableOptions {
   columnOrder?: boolean;
   columnSearch?: boolean;
+  exportPdf?: boolean;
   globalSearch?: boolean;
   hideColumns?: boolean;
   simulateAsync?: boolean;
@@ -167,6 +175,25 @@ export interface ITableOptions {
   <section class="flex flex-col gap-3">
     <div class="flex items-center justify-end gap-5">
       <div class="flex items-center gap-2">
+        <TooltipProvider v-if="options?.exportPdf">
+          <Tooltip>
+            <TooltipTrigger
+              :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
+              @click="
+                () =>
+                  exportTableToPdf({
+                    filename: exportPdfConfig?.filename,
+                    formatters: exportPdfConfig?.formatters,
+                    table,
+                    title: exportPdfConfig?.title,
+                  })
+              "
+            >
+              <FilePdf class="size-5" />
+            </TooltipTrigger>
+            <TooltipContent>Exportar PDF</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <TooltipProvider v-if="options?.hideColumns">
           <Tooltip>
             <TooltipTrigger
