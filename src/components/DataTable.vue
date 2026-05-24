@@ -1,21 +1,29 @@
 <script setup lang="ts" generic="TData, TValue">
+import { Columns3Cog } from "@lucide/vue";
+
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components";
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchInput } from "@/components";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+import { buttonVariants } from "@/components/ui/button";
 import { computed, h, ref } from "vue";
 import {
-  getCoreRowModel,
-  useVueTable,
   FlexRender,
-  type ColumnDef,
+  getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
+  type ColumnDef,
   type PaginationState,
   type SortingState,
-  getSortedRowModel,
-  getFilteredRowModel,
+  useVueTable,
 } from "@tanstack/vue-table";
+
+import { cn } from "@/lib/utils";
 
 interface IProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
@@ -57,6 +65,8 @@ const tableColumns = computed(() => {
 });
 
 const table = useVueTable({
+  defaultColumn: { minSize: 40 },
+
   get data() {
     return tableData.value;
   },
@@ -96,12 +106,42 @@ const table = useVueTable({
 export interface ITableOptions {
   columnSearch?: boolean;
   globalSearch?: boolean;
+  hideColumns?: boolean;
 }
 </script>
 
 <template>
   <section class="flex flex-col gap-3">
     <div class="flex items-center justify-end gap-5">
+      <div class="flex items-center gap-2">
+        <Popover v-if="options?.hideColumns">
+          <PopoverAnchor asChild>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger
+                    :class="
+                      cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')
+                    "
+                  >
+                    <Columns3Cog />
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Seleccionar columnas</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </PopoverAnchor>
+          <PopoverContent class="max-h-50 w-fit overflow-y-auto">
+            <label v-for="column in table.getAllLeafColumns()" :key="column.id" class="flex items-center gap-2 text-sm">
+              <Checkbox
+                :model-value="column.getIsVisible()"
+                @update:model-value="(checked: boolean | 'indeterminate') => column.toggleVisibility(!!checked)"
+              />
+              {{ column.id }}
+            </label>
+          </PopoverContent>
+        </Popover>
+      </div>
       <SearchInput
         v-if="options?.globalSearch"
         :value="globalFilter"
