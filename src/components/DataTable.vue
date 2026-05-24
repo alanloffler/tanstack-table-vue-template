@@ -4,6 +4,7 @@ import { Columns3Cog, GripVertical, RefreshCcw } from "@lucide/vue";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DraggableColumnHeader } from "@/components";
 import { FilePdf } from "@/components/icons";
+import { FileXls } from "@/components/icons";
 import { Pagination } from "@/components";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchInput } from "@/components";
@@ -28,8 +29,9 @@ import {
 import { isSortable } from "@dnd-kit/vue/sortable";
 
 import { cn } from "@/lib/utils";
-import { useTableStore } from "@/stores/table.store";
 import { exportTableToPdf, type TPdfFormatter } from "@/utils/export-table-pdf.utils";
+import { exportTableToXls, type TXlsFormatter } from "@/utils/export-table-xls.utils";
+import { useTableStore } from "@/stores/table.store";
 
 interface IProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
@@ -40,6 +42,11 @@ interface IProps<TData, TValue> {
     filename?: string;
     formatters?: Record<string, TPdfFormatter<TData>>;
     title?: string;
+  };
+  exportXlsConfig?: {
+    filename?: string;
+    formatters?: Record<string, TXlsFormatter<TData>>;
+    sheetName?: string;
   };
   loading?: boolean;
   options?: ITableOptions;
@@ -165,6 +172,7 @@ export interface ITableOptions {
   columnOrder?: boolean;
   columnSearch?: boolean;
   exportPdf?: boolean;
+  exportXls?: boolean;
   globalSearch?: boolean;
   hideColumns?: boolean;
   simulateAsync?: boolean;
@@ -192,6 +200,25 @@ export interface ITableOptions {
               <FilePdf class="size-5" />
             </TooltipTrigger>
             <TooltipContent>Exportar PDF</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider v-if="options?.exportXls">
+          <Tooltip>
+            <TooltipTrigger
+              :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
+              @click="
+                () =>
+                  exportTableToXls({
+                    filename: exportXlsConfig?.filename,
+                    formatters: exportXlsConfig?.formatters,
+                    sheetName: exportXlsConfig?.sheetName,
+                    table,
+                  })
+              "
+            >
+              <FileXls class="size-5" />
+            </TooltipTrigger>
+            <TooltipContent>Exportar XLS</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <TooltipProvider v-if="options?.hideColumns">
