@@ -24,6 +24,7 @@ import {
   type SortingState,
   useVueTable,
 } from "@tanstack/vue-table";
+import { isSortable } from "@dnd-kit/vue/sortable";
 
 import { cn } from "@/lib/utils";
 import { useTableStore } from "@/stores/table.store";
@@ -138,17 +139,16 @@ watch(
 );
 
 function handleDragEnd(event: DragEndEvent) {
-  const { source, target } = event.operation;
-  if (!source || !target || source.id === target.id) return;
+  const { source } = event.operation;
+  if (!isSortable(source)) return;
 
-  const columnIds = table.getAllLeafColumns().map((c) => c.id);
-  const oldIndex = columnIds.indexOf(source.id as string);
-  const newIndex = columnIds.indexOf(target.id as string);
-  if (oldIndex === -1 || newIndex === -1) return;
+  const { initialIndex, index } = source;
+  if (initialIndex === index) return;
 
+  const columnIds = table.getHeaderGroups().flatMap((hg) => hg.headers.map((h) => h.column.id));
   const newOrder = [...columnIds];
-  const [moved] = newOrder.splice(oldIndex, 1);
-  newOrder.splice(newIndex, 0, moved);
+  const [moved] = newOrder.splice(initialIndex, 1);
+  newOrder.splice(index, 0, moved);
   table.setColumnOrder(newOrder);
 }
 </script>
