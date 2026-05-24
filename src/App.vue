@@ -13,12 +13,17 @@ import { DataService, type ICharacter } from "@/services/data.service";
 const INIT_OPTS: ITableOptions = {
   columnOrder: true,
   columnSearch: true,
+  exportPdf: true,
   globalSearch: true,
   hideColumns: true,
   simulateAsync: false,
 };
 
 const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label: string }[] }[] = [
+  {
+    name: "exports",
+    options: [{ key: "exportPdf", label: "Exportar PDF" }],
+  },
   {
     name: "columns",
     options: [
