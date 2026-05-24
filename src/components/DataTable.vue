@@ -126,6 +126,7 @@ export interface ITableOptions {
   columnSearch?: boolean;
   globalSearch?: boolean;
   hideColumns?: boolean;
+  simulateAsync?: boolean;
 }
 </script>
 
