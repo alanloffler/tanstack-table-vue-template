@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TData, TValue">
-import { Columns3Cog } from "@lucide/vue";
+import { Columns3Cog, RefreshCcw } from "@lucide/vue";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components";
@@ -10,7 +10,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { buttonVariants } from "@/components/ui/button";
-import { computed, h, ref } from "vue";
+import { computed, h, ref, watch } from "vue";
 import {
   FlexRender,
   getCoreRowModel,
@@ -24,6 +24,7 @@ import {
 } from "@tanstack/vue-table";
 
 import { cn } from "@/lib/utils";
+import { useTableStore } from "@/stores/table.store";
 
 interface IProps<TData, TValue> {
   columns?: ColumnDef<TData, TValue>[];
@@ -33,6 +34,7 @@ interface IProps<TData, TValue> {
   loading?: boolean;
   options?: ITableOptions;
   pageSizes?: number[];
+  storageKey?: string;
 }
 
 const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
@@ -42,6 +44,9 @@ const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
   pageSizes: () => [5, 10, 20, 50],
 });
 
+const tableStore = useTableStore();
+
+const columnVisibility = ref(props.storageKey ? (tableStore.tables[props.storageKey]?.columnVisibility ?? {}) : {});
 const globalFilter = ref<string>("");
 const pagination = ref<PaginationState>({
   pageIndex: 0,
@@ -74,6 +79,9 @@ const table = useVueTable({
     return tableColumns.value;
   },
   state: {
+    get columnVisibility() {
+      return columnVisibility.value;
+    },
     get globalFilter() {
       return globalFilter.value;
     },
@@ -83,6 +91,10 @@ const table = useVueTable({
     get sorting() {
       return sorting.value;
     },
+  },
+  onColumnVisibilityChange: (updater) => {
+    columnVisibility.value = typeof updater === "function" ? updater(columnVisibility.value) : updater;
+    if (props.storageKey) tableStore.setColumnVisibility(props.storageKey, columnVisibility.value);
   },
   onGlobalFilterChange: (updater) => {
     globalFilter.value = typeof updater === "function" ? updater(globalFilter.value) : updater;
@@ -100,6 +112,13 @@ const table = useVueTable({
 
   globalFilterFn: "includesString",
 });
+
+watch(
+  () => (props.storageKey ? tableStore.tables[props.storageKey]?.columnVisibility : undefined),
+  (val) => {
+    if (props.storageKey) columnVisibility.value = val ?? {};
+  },
+);
 </script>
 
 <script lang="ts">
@@ -114,6 +133,17 @@ export interface ITableOptions {
   <section class="flex flex-col gap-3">
     <div class="flex items-center justify-end gap-5">
       <div class="flex items-center gap-2">
+        <TooltipProvider v-if="options?.hideColumns">
+          <Tooltip>
+            <TooltipTrigger
+              :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
+              @click="() => tableStore.clearTable(storageKey!)"
+            >
+              <RefreshCcw />
+            </TooltipTrigger>
+            <TooltipContent>Resetear tabla</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Popover v-if="options?.hideColumns">
           <PopoverAnchor asChild>
             <TooltipProvider>
