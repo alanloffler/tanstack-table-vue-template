@@ -186,7 +186,9 @@ export interface ITableOptions {
         <TooltipProvider v-if="options?.exportPdf">
           <Tooltip>
             <TooltipTrigger
-              :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
+              :class="
+                cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'text-muted-foreground hover:bg-muted')
+              "
               @click="
                 () =>
                   exportTableToPdf({
@@ -205,7 +207,9 @@ export interface ITableOptions {
         <TooltipProvider v-if="options?.exportXls">
           <Tooltip>
             <TooltipTrigger
-              :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
+              :class="
+                cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'text-muted-foreground hover:bg-muted')
+              "
               @click="
                 () =>
                   exportTableToXls({
@@ -224,7 +228,9 @@ export interface ITableOptions {
         <TooltipProvider v-if="options?.columnOrder || options?.hideColumns">
           <Tooltip>
             <TooltipTrigger
-              :class="cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')"
+              :class="
+                cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'text-muted-foreground hover:bg-muted')
+              "
               @click="() => tableStore.clearTable(storageKey!)"
             >
               <RefreshCcw />
@@ -239,7 +245,10 @@ export interface ITableOptions {
                 <TooltipTrigger asChild>
                   <PopoverTrigger
                     :class="
-                      cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'text-muted-foreground hover:bg-muted')
+                      cn(
+                        buttonVariants({ variant: 'outline', size: 'icon-sm' }),
+                        'text-muted-foreground hover:bg-muted',
+                      )
                     "
                   >
                     <Columns3Cog />
