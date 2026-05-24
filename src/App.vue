@@ -11,11 +11,21 @@ import type { ITableOptions } from "@/components/DataTable.vue";
 import { DataService, type ICharacter } from "@/services/data.service";
 
 const INIT_OPTS: ITableOptions = {
-  columnSearch: false,
-  globalSearch: false,
+  columnSearch: true,
+  globalSearch: true,
+  hideColumns: true,
 };
 
 const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label: string }[] }[] = [
+  {
+    name: "columns",
+    options: [
+      {
+        key: "hideColumns",
+        label: "Ocultar columnas",
+      },
+    ],
+  },
   {
     name: "search",
     options: [
