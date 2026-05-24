@@ -11,6 +11,7 @@ import type { ITableOptions } from "@/components/DataTable.vue";
 import { DataService, type ICharacter } from "@/services/data.service";
 
 const INIT_OPTS: ITableOptions = {
+  columnOrder: true,
   columnSearch: true,
   globalSearch: true,
   hideColumns: true,
@@ -20,7 +21,10 @@ const INIT_OPTS: ITableOptions = {
 const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label: string }[] }[] = [
   {
     name: "columns",
-    options: [{ key: "hideColumns", label: "Ocultar columnas" }],
+    options: [
+      { key: "columnOrder", label: "Ordenar columnas" },
+      { key: "hideColumns", label: "Ocultar columnas" },
+    ],
   },
   {
     name: "search",
