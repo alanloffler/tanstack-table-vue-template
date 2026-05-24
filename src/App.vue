@@ -14,6 +14,7 @@ const INIT_OPTS: ITableOptions = {
   columnOrder: true,
   columnSearch: true,
   exportPdf: true,
+  exportXls: true,
   globalSearch: true,
   hideColumns: true,
   simulateAsync: false,
@@ -22,7 +23,10 @@ const INIT_OPTS: ITableOptions = {
 const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label: string }[] }[] = [
   {
     name: "exports",
-    options: [{ key: "exportPdf", label: "Exportar PDF" }],
+    options: [
+      { key: "exportPdf", label: "Exportar PDF" },
+      { key: "exportXls", label: "Exportar XLS" },
+    ],
   },
   {
     name: "columns",
