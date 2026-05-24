@@ -103,7 +103,7 @@ export interface ITableOptions {
   <section class="flex flex-col gap-3">
     <div class="flex items-center justify-end gap-5">
       <SearchInput
-        v-if="options?.columnSearch"
+        v-if="options?.globalSearch"
         :value="globalFilter"
         :on-change="(v: string | number) => table.setGlobalFilter(v)"
         :on-clear="
@@ -125,15 +125,13 @@ export interface ITableOptions {
             />
           </TableHead>
         </TableRow>
-      </TableHeader>
-      <TableBody>
         <TableRow
+          v-if="options?.columnSearch"
           v-for="headerGroup in table.getHeaderGroups()"
           :key="`${headerGroup.id}-filters`"
           class="bg-card hover:bg-card"
         >
           <TableHead
-            v-if="options?.columnSearch"
             v-for="(header, index) in headerGroup.headers"
             :key="`${header.id}-filter`"
             class="overflow-hidden border-r py-1.5 last:border-none"
@@ -153,6 +151,8 @@ export interface ITableOptions {
             />
           </TableHead>
         </TableRow>
+      </TableHeader>
+      <TableBody>
         <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
           <TableCell
             v-for="cell in row.getVisibleCells()"
