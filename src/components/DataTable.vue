@@ -375,11 +375,13 @@ export interface ITableOptions {
                 :index="draggableColumnIds.indexOf(header.column.id)"
                 :is-last-column="index === headerGroup.headers.length - 1"
                 :column-sizing="options?.columnSizing"
+                :style="{ textAlign: header.column.columnDef.meta?.alignment ?? 'left' }"
               />
               <TableHead
                 v-else
                 class="relative overflow-hidden py-2.5"
                 :style="{
+                  textAlign: header.column.columnDef.meta?.alignment ?? 'left',
                   minWidth: header.column.columnDef.minSize,
                   width:
                     index === headerGroup.headers.length - 1 ? 'auto' : `calc(var(--header-${header.id}-size) * 1px)`,
@@ -441,6 +443,7 @@ export interface ITableOptions {
               :key="cell.id"
               class="overflow-hidden border-r whitespace-normal last:border-none"
               :style="{
+                textAlign: cell.column.columnDef.meta?.alignment ?? 'left',
                 minWidth: cell.column.columnDef.minSize,
                 width:
                   index === row.getVisibleCells().length - 1 ? 'auto' : `calc(var(--col-${cell.column.id}-size) * 1px)`,
