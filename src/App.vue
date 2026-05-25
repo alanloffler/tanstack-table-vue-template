@@ -13,6 +13,7 @@ import { DataService, type ICharacter } from "@/services/data.service";
 const INIT_OPTS: ITableOptions = {
   columnOrder: true,
   columnSearch: true,
+  columnSizing: true,
   exportPdf: true,
   exportXls: true,
   globalSearch: true,
@@ -34,6 +35,7 @@ const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label:
     options: [
       { key: "columnOrder", label: "Ordenar columnas" },
       { key: "hideColumns", label: "Ocultar columnas" },
+      { key: "columnSizing", label: "Redimensionar columnas" },
     ],
   },
   {
