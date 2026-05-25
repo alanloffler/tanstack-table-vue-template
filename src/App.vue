@@ -57,10 +57,35 @@ watch(delay, (val) => getData(val), { immediate: true });
 
 const columns: ColumnDef<ICharacter>[] = [
   {
+    accessorKey: "select-col",
+    id: "Seleccionar",
+    size: 20,
+    enableColumnFilter: false,
+    meta: {
+      disableExport: true,
+      disableDragging: true,
+    },
+    header: ({ table }) =>
+      h(Checkbox, {
+        class: "bg-background border-foreground/30",
+        modelValue: table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? "indeterminate" : false,
+        "onUpdate:modelValue": (checked) => table.toggleAllRowsSelected(checked === true),
+      }),
+    cell: ({ row }) =>
+      h(Checkbox, {
+        modelValue: row.getIsSelected(),
+        disabled: !row.getCanSelect(),
+        "onUpdate:modelValue": (checked) => row.toggleSelected(checked === true),
+      }),
+  },
+  {
     accessorKey: "id",
     id: "ID",
     size: 20,
     enableColumnFilter: false,
+    meta: {
+      disableDragging: true,
+    },
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
