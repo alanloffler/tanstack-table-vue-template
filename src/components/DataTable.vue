@@ -457,7 +457,7 @@ export interface ITableOptions {
           </TableRow>
         </TableBody>
       </Table>
-      <DragOverlay :dropAnimation="null">
+      <DragOverlay class="-mt-3" :dropAnimation="null">
         <template #default="{ source }">
           <div
             class="bg-background flex min-h-10.5 w-fit items-center gap-2 rounded-md border px-2 py-1 pr-4 text-sm shadow-lg"
