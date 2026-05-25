@@ -159,12 +159,23 @@ function handleDragEnd(event: DragEndEvent) {
   const { initialIndex, index } = source;
   if (initialIndex === index) return;
 
-  const columnIds = table.getHeaderGroups().flatMap((hg) => hg.headers.map((h) => h.column.id));
-  const newOrder = [...columnIds];
-  const [moved] = newOrder.splice(initialIndex, 1);
-  newOrder.splice(index, 0, moved);
+  const allIds = table.getHeaderGroups().flatMap((hg) => hg.headers.map((h) => h.column.id));
+  const draggable = draggableColumnIds.value.slice();
+  const [moved] = draggable.splice(initialIndex, 1);
+  draggable.splice(index, 0, moved);
+
+  let d = 0;
+  const newOrder = allIds.map((id) => (draggableColumnIds.value.includes(id) ? draggable[d++] : id));
   table.setColumnOrder(newOrder);
 }
+
+const draggableColumnIds = computed(() =>
+  table
+    .getHeaderGroups()
+    .flatMap((hg) => hg.headers)
+    .filter((h) => !h.column.columnDef.meta?.disableDragging)
+    .map((h) => h.column.id),
+);
 </script>
 
 <script lang="ts">
@@ -285,8 +296,12 @@ export interface ITableOptions {
       <Table className="dark:bg-card table-fixed" style="width: 100%">
         <TableHeader class="dark:bg-primary-foreground/50 bg-neutral-100">
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-            <template v-for="(header, index) in headerGroup.headers" :key="header.id">
-              <DraggableColumnHeader v-if="options?.columnOrder" :header="header" :index="index" />
+            <template v-for="header in headerGroup.headers" :key="header.id">
+              <DraggableColumnHeader
+                v-if="options?.columnOrder && !header.column.columnDef.meta?.disableDragging"
+                :header="header"
+                :index="draggableColumnIds.indexOf(header.column.id)"
+              />
               <TableHead v-else class="relative overflow-hidden py-2.5">
                 <FlexRender
                   v-if="!header.isPlaceholder"
