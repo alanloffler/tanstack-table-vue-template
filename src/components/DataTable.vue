@@ -13,7 +13,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { buttonVariants } from "@/components/ui/button";
-import { computed, h, ref, watch } from "vue";
+import { computed, h, onMounted, ref, watch } from "vue";
 import { DragDropProvider, DragOverlay, type DragEndEvent } from "@dnd-kit/vue";
 import {
   FlexRender,
@@ -22,6 +22,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type ColumnDef,
+  type ColumnSizingState,
   type PaginationState,
   type SortingState,
   useVueTable,
@@ -64,7 +65,11 @@ const props = withDefaults(defineProps<IProps<TData, TValue>>(), {
 const tableStore = useTableStore();
 
 const columnOrder = ref<string[]>(props.storageKey ? (tableStore.tables[props.storageKey]?.columnOrder ?? []) : []);
+const columnSizing = ref<ColumnSizingState>(
+  props.storageKey ? (tableStore.tables[props.storageKey]?.columnSizing ?? {}) : {},
+);
 const columnVisibility = ref(props.storageKey ? (tableStore.tables[props.storageKey]?.columnVisibility ?? {}) : {});
+const containerRef = ref<HTMLElement | null>(null);
 const globalFilter = ref<string>("");
 const pagination = ref<PaginationState>({
   pageIndex: 0,
@@ -88,6 +93,7 @@ const tableColumns = computed(() => {
 });
 
 const table = useVueTable({
+  columnResizeMode: "onChange",
   defaultColumn: { minSize: 40 },
 
   get data() {
@@ -99,6 +105,9 @@ const table = useVueTable({
   state: {
     get columnOrder() {
       return columnOrder.value;
+    },
+    get columnSizing() {
+      return columnSizing.value;
     },
     get columnVisibility() {
       return columnVisibility.value;
@@ -116,6 +125,10 @@ const table = useVueTable({
   onColumnOrderChange: (updater) => {
     columnOrder.value = typeof updater === "function" ? updater(columnOrder.value) : updater;
     if (props.storageKey) tableStore.setColumnOrder(props.storageKey, columnOrder.value);
+  },
+  onColumnSizingChange: (updater) => {
+    columnSizing.value = typeof updater === "function" ? updater(columnSizing.value) : updater;
+    if (props.storageKey) tableStore.setColumnSizing(props.storageKey, columnSizing.value);
   },
   onColumnVisibilityChange: (updater) => {
     columnVisibility.value = typeof updater === "function" ? updater(columnVisibility.value) : updater;
@@ -139,19 +152,27 @@ const table = useVueTable({
 });
 
 watch(
-  () => (props.storageKey ? tableStore.tables[props.storageKey]?.columnVisibility : undefined),
-  (val) => {
-    if (props.storageKey) columnVisibility.value = val ?? {};
-  },
-);
-
-watch(
   () => (props.storageKey ? tableStore.tables[props.storageKey]?.columnOrder : undefined),
   (val) => {
     if (props.storageKey) columnOrder.value = val ?? [];
   },
 );
 
+watch(
+  () => (props.storageKey ? tableStore.tables[props.storageKey]?.columnSizing : undefined),
+  (val) => {
+    if (props.storageKey) columnSizing.value = val ?? {};
+  },
+);
+
+watch(
+  () => (props.storageKey ? tableStore.tables[props.storageKey]?.columnVisibility : undefined),
+  (val) => {
+    if (props.storageKey) columnVisibility.value = val ?? {};
+  },
+);
+
+// Drag and drop
 function handleDragEnd(event: DragEndEvent) {
   const { source } = event.operation;
   if (!isSortable(source)) return;
@@ -176,12 +197,54 @@ const draggableColumnIds = computed(() =>
     .filter((h) => !h.column.columnDef.meta?.disableDragging)
     .map((h) => h.column.id),
 );
+
+// Column sizing
+function computeDefaultSizing(): ColumnSizingState | null {
+  const container = containerRef.value;
+  if (!container) return null;
+  const width = container.offsetWidth;
+  if (width === 0) return null;
+  const visibleCols = table.getAllLeafColumns().filter((c) => c.getIsVisible());
+  if (visibleCols.length === 0) return null;
+  const totalWeight = visibleCols.reduce((sum, c) => sum + (c.columnDef.size ?? 150), 0);
+  const sizing: ColumnSizingState = {};
+  visibleCols.forEach((c) => {
+    sizing[c.id] = Math.floor(((c.columnDef.size ?? 150) / totalWeight) * width);
+  });
+  return sizing;
+}
+
+onMounted(() => {
+  if (Object.keys(columnSizing.value).length > 0) return;
+  const sizing = computeDefaultSizing();
+  if (sizing && props.storageKey) tableStore.setColumnSizing(props.storageKey, sizing);
+});
+
+const isResizing = computed(() => !!table.getState().columnSizingInfo.isResizingColumn);
+
+const columnSizeVars = computed(() => {
+  const colSizes: Record<string, number> = {};
+  for (const header of table.getFlatHeaders()) {
+    colSizes[`--header-${header.id}-size`] = header.getSize();
+    colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+  }
+  return colSizes;
+});
+
+const visibleColumns = computed(() => table.getVisibleLeafColumns());
+
+const tableMinWidth = computed(() => {
+  const fixed = visibleColumns.value.slice(0, -1).reduce((sum, c) => sum + c.getSize(), 0);
+  const lastMin = visibleColumns.value[visibleColumns.value.length - 1]?.columnDef.minSize ?? 40;
+  return fixed + lastMin;
+});
 </script>
 
 <script lang="ts">
 export interface ITableOptions {
   columnOrder?: boolean;
   columnSearch?: boolean;
+  columnSizing?: boolean;
   exportPdf?: boolean;
   exportXls?: boolean;
   globalSearch?: boolean;
@@ -192,7 +255,11 @@ export interface ITableOptions {
 </script>
 
 <template>
-  <section class="flex flex-col gap-3">
+  <section
+    ref="containerRef"
+    :class="cn('flex flex-col gap-3', isResizing && 'cursor-col-resize select-none')"
+    :style="{ ...columnSizeVars, '--table-min-width': `${tableMinWidth}px` }"
+  >
     <div class="flex items-center justify-end gap-5">
       <div class="flex items-center gap-2">
         <TooltipProvider v-if="options?.exportPdf" :disabled="!options?.showTooltips">
@@ -294,20 +361,43 @@ export interface ITableOptions {
       />
     </div>
     <DragDropProvider @drag-end="handleDragEnd">
-      <Table className="dark:bg-card table-fixed" style="width: 100%">
+      <Table className="dark:bg-card table-fixed min-w-(--table-min-width)" style="width: 100%">
         <TableHeader class="dark:bg-primary-foreground/50 bg-neutral-100">
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-            <template v-for="header in headerGroup.headers" :key="header.id">
+            <template v-for="(header, index) in headerGroup.headers" :key="header.id">
               <DraggableColumnHeader
                 v-if="options?.columnOrder && !header.column.columnDef.meta?.disableDragging"
                 :header="header"
                 :index="draggableColumnIds.indexOf(header.column.id)"
+                :is-last-column="index === headerGroup.headers.length - 1"
+                :column-sizing="options?.columnSizing"
               />
-              <TableHead v-else class="relative overflow-hidden py-2.5">
+              <TableHead
+                v-else
+                class="relative overflow-hidden py-2.5"
+                :style="{
+                  minWidth: header.column.columnDef.minSize,
+                  width:
+                    index === headerGroup.headers.length - 1 ? 'auto' : `calc(var(--header-${header.id}-size) * 1px)`,
+                  maxWidth: index === headerGroup.headers.length - 1 ? undefined : header.column.columnDef.maxSize,
+                }"
+              >
                 <FlexRender
                   v-if="!header.isPlaceholder"
                   :render="header.column.columnDef.header"
                   :props="header.getContext()"
+                />
+                <div
+                  v-if="index !== headerGroup.headers.length - 1 && options?.columnSizing"
+                  @dblclick="header.column.resetSize()"
+                  @mousedown="header.getResizeHandler()($event)"
+                  @touchstart="header.getResizeHandler()($event)"
+                  :class="
+                    cn(
+                      'hover:bg-primary/50 active:bg-primary absolute top-0 right-0 h-full w-0.75 cursor-col-resize touch-none bg-transparent transition-colors select-none',
+                      header.column.getIsResizing() && 'bg-primary',
+                    )
+                  "
                 />
               </TableHead>
             </template>
@@ -343,9 +433,14 @@ export interface ITableOptions {
         <TableBody>
           <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
             <TableCell
-              v-for="cell in row.getVisibleCells()"
+              v-for="(cell, index) in row.getVisibleCells()"
               :key="cell.id"
               class="overflow-hidden border-r whitespace-normal last:border-none"
+              :style="{
+                minWidth: cell.column.columnDef.minSize,
+                width:
+                  index === row.getVisibleCells().length - 1 ? 'auto' : `calc(var(--col-${cell.column.id}-size) * 1px)`,
+              }"
             >
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </TableCell>
