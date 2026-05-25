@@ -95,6 +95,7 @@ const tableColumns = computed(() => {
 const table = useVueTable({
   columnResizeMode: "onChange",
   defaultColumn: { minSize: 40 },
+  globalFilterFn: "includesString",
 
   get data() {
     return tableData.value;
@@ -122,6 +123,7 @@ const table = useVueTable({
       return sorting.value;
     },
   },
+
   onColumnOrderChange: (updater) => {
     columnOrder.value = typeof updater === "function" ? updater(columnOrder.value) : updater;
     if (props.storageKey) tableStore.setColumnOrder(props.storageKey, columnOrder.value);
@@ -147,8 +149,6 @@ const table = useVueTable({
   getFilteredRowModel: getFilteredRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
-
-  globalFilterFn: "includesString",
 });
 
 watch(
@@ -214,11 +214,15 @@ function computeDefaultSizing(): ColumnSizingState | null {
   return sizing;
 }
 
-onMounted(() => {
+function applyDefaultSizing() {
   if (Object.keys(columnSizing.value).length > 0) return;
   const sizing = computeDefaultSizing();
   if (sizing && props.storageKey) tableStore.setColumnSizing(props.storageKey, sizing);
-});
+}
+
+onMounted(applyDefaultSizing);
+
+watch(() => columnSizing.value, applyDefaultSizing);
 
 const isResizing = computed(() => !!table.getState().columnSizingInfo.isResizingColumn);
 
@@ -361,7 +365,7 @@ export interface ITableOptions {
       />
     </div>
     <DragDropProvider @drag-end="handleDragEnd">
-      <Table className="dark:bg-card table-fixed min-w-(--table-min-width)" style="width: 100%">
+      <Table class="dark:bg-card min-w-(--table-min-width) table-fixed" style="width: 100%">
         <TableHeader class="dark:bg-primary-foreground/50 bg-neutral-100">
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <template v-for="(header, index) in headerGroup.headers" :key="header.id">
