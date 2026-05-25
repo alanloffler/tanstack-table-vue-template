@@ -3,3 +3,4 @@ export { default as DraggableColumnHeader } from "@/components/DraggableColumnHe
 export { default as Pagination } from "@/components/Pagination.vue";
 export { default as SearchInput } from "@/components/SearchInput.vue";
 export { default as SortableIcon } from "@/components/SortableIcon.vue";
+export { default as ToggleTheme } from "@/components/ToggleTheme.vue";
