@@ -186,6 +186,7 @@ export interface ITableOptions {
   exportXls?: boolean;
   globalSearch?: boolean;
   hideColumns?: boolean;
+  showTooltips?: boolean;
   simulateAsync?: boolean;
 }
 </script>
@@ -194,7 +195,7 @@ export interface ITableOptions {
   <section class="flex flex-col gap-3">
     <div class="flex items-center justify-end gap-5">
       <div class="flex items-center gap-2">
-        <TooltipProvider v-if="options?.exportPdf">
+        <TooltipProvider v-if="options?.exportPdf" :disabled="!options?.showTooltips">
           <Tooltip>
             <TooltipTrigger
               :class="
@@ -215,7 +216,7 @@ export interface ITableOptions {
             <TooltipContent>Exportar PDF</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <TooltipProvider v-if="options?.exportXls">
+        <TooltipProvider v-if="options?.exportXls" :disabled="!options?.showTooltips">
           <Tooltip>
             <TooltipTrigger
               :class="
@@ -236,7 +237,7 @@ export interface ITableOptions {
             <TooltipContent>Exportar XLS</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <TooltipProvider v-if="options?.columnOrder || options?.hideColumns">
+        <TooltipProvider v-if="options?.columnOrder || options?.hideColumns" :disabled="!options?.showTooltips">
           <Tooltip>
             <TooltipTrigger
               :class="
@@ -251,7 +252,7 @@ export interface ITableOptions {
         </TooltipProvider>
         <Popover v-if="options?.hideColumns">
           <PopoverAnchor asChild>
-            <TooltipProvider>
+            <TooltipProvider :disabled="!options?.showTooltips">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <PopoverTrigger
@@ -354,7 +355,7 @@ export interface ITableOptions {
           </TableRow>
         </TableBody>
       </Table>
-      <DragOverlay>
+      <DragOverlay :dropAnimation="null">
         <template #default="{ source }">
           <div
             class="bg-background flex min-h-10.5 w-fit items-center gap-2 rounded-md border px-2 py-1 pr-4 text-sm shadow-lg"
