@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Github } from "@/components/icons";
+import { Moon, Sun } from "@lucide/vue";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { SortableIcon } from "@/components";
 
 import type { ColumnDef } from "@tanstack/vue-table";
 import { h, ref, watch } from "vue";
+import { useColorMode } from "@vueuse/core";
 
 import type { ITableOptions } from "@/components/DataTable.vue";
 import { DataService, type ICharacter } from "@/services/data.service";
@@ -61,6 +63,8 @@ const data = ref<ICharacter[]>([]);
 const delay = ref<number>(0);
 const loading = ref<boolean>(false);
 const tableOptions = ref<ITableOptions>(INIT_OPTS);
+
+const mode = useColorMode();
 
 watch(delay, (val) => getData(val), { immediate: true });
 
@@ -152,6 +156,12 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
     [key]: value,
   };
 }
+
+function toggleTheme(e): void {
+  document.documentElement.style.setProperty("--x", `${e.clientX}px`);
+  document.documentElement.style.setProperty("--y", `${e.clientY}px`);
+  document.startViewTransition(() => (mode.value === "dark" ? (mode.value = "light") : (mode.value = "dark")));
+}
 </script>
 
 <template>
@@ -172,6 +182,10 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
               <Github class="stroke-neutral-500" :strokeWidth="1.5" />
             </Button>
           </a>
+          <Button @click="(e) => toggleTheme(e)" size="icon-sm" variant="outline">
+            <Sun v-if="mode === 'dark'" class="stroke-yellow-400" stroke-width="1.5" />
+            <Moon v-else class="fill-neutral-200 stroke-neutral-400" stroke-width="1.5" />
+          </Button>
         </div>
       </div>
     </header>
