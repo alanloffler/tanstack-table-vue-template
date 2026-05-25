@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Github } from "@/components/icons";
+
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTable } from "@/components";
@@ -154,9 +157,22 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
 <template>
   <div class="bg-background text-foreground min-h-screen">
     <header class="border-border border-b">
-      <div class="mx-auto flex h-16 max-w-6xl flex-col items-start justify-center gap-0 px-6">
-        <h1 class="text-lg font-semibold tracking-tight">Tanstack Table</h1>
-        <span class="text-muted-foreground text-sm tracking-tight">Vue version</span>
+      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div class="flex flex-col">
+          <h1 class="text-lg font-semibold tracking-tight">Tanstack Table</h1>
+          <span class="text-muted-foreground text-sm tracking-tight">Vue version</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <a
+            href="https://github.com/alanloffler/tanstack-table-vue-template"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button size="icon-sm" variant="outline">
+              <Github class="stroke-neutral-500" :strokeWidth="1.5" />
+            </Button>
+          </a>
+        </div>
       </div>
     </header>
     <main class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
