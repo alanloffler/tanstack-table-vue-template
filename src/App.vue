@@ -17,6 +17,7 @@ const INIT_OPTS: ITableOptions = {
   exportXls: true,
   globalSearch: true,
   hideColumns: true,
+  showTooltips: true,
   simulateAsync: false,
 };
 
@@ -44,7 +45,10 @@ const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label:
   },
   {
     name: "async",
-    options: [{ key: "simulateAsync", label: "Simular conexión lenta" }],
+    options: [
+      { key: "simulateAsync", label: "Simular conexión lenta" },
+      { key: "showTooltips", label: "Mostrar tooltips" },
+    ],
   },
 ];
 
