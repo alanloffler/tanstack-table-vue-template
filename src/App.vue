@@ -157,7 +157,7 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
   };
 }
 
-function toggleTheme(e): void {
+function toggleTheme(e: MouseEvent): void {
   document.documentElement.style.setProperty("--x", `${e.clientX}px`);
   document.documentElement.style.setProperty("--y", `${e.clientY}px`);
   document.startViewTransition(() => (mode.value === "dark" ? (mode.value = "light") : (mode.value = "dark")));
@@ -182,7 +182,7 @@ function toggleTheme(e): void {
               <Github class="stroke-neutral-500" :strokeWidth="1.5" />
             </Button>
           </a>
-          <Button @click="(e) => toggleTheme(e)" size="icon-sm" variant="outline">
+          <Button @click="(e: MouseEvent) => toggleTheme(e)" size="icon-sm" variant="outline">
             <Sun v-if="mode === 'dark'" class="stroke-yellow-400" stroke-width="1.5" />
             <Moon v-else class="fill-neutral-200 stroke-neutral-400" stroke-width="1.5" />
           </Button>
