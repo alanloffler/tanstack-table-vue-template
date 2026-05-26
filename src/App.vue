@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Github } from "@/components/icons";
+import { GithubIcon } from "@/components/icons";
+import { VueIcon } from "@/components/icons";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -30,30 +31,30 @@ const OPTION_GROUPS: { name: string; options: { key: keyof ITableOptions; label:
   {
     name: "exports",
     options: [
-      { key: "exportPdf", label: "Exportar PDF" },
-      { key: "exportXls", label: "Exportar XLS" },
+      { key: "exportPdf", label: "Export PDF" },
+      { key: "exportXls", label: "Export XLS" },
     ],
   },
   {
     name: "columns",
     options: [
-      { key: "columnOrder", label: "Ordenar columnas" },
-      { key: "hideColumns", label: "Ocultar columnas" },
-      { key: "columnSizing", label: "Redimensionar columnas" },
+      { key: "columnOrder", label: "Sort columns" },
+      { key: "hideColumns", label: "Hide columns" },
+      { key: "columnSizing", label: "Resize columns" },
     ],
   },
   {
     name: "search",
     options: [
-      { key: "columnSearch", label: "Buscar en columnas" },
-      { key: "globalSearch", label: "Búsqueda globalmente" },
+      { key: "columnSearch", label: "Search in columns" },
+      { key: "globalSearch", label: "Global search" },
     ],
   },
   {
     name: "async",
     options: [
-      { key: "simulateAsync", label: "Simular conexión lenta" },
-      { key: "showTooltips", label: "Mostrar tooltips" },
+      { key: "simulateAsync", label: "Simulate slow connection" },
+      { key: "showTooltips", label: "Show tooltips" },
     ],
   },
 ];
@@ -68,7 +69,7 @@ watch(delay, (val) => getData(val), { immediate: true });
 const columns: ColumnDef<ICharacter>[] = [
   {
     accessorKey: "select-col",
-    id: "Seleccionar",
+    id: "Select",
     size: 20,
     enableColumnFilter: false,
     meta: {
@@ -101,14 +102,14 @@ const columns: ColumnDef<ICharacter>[] = [
   },
   {
     accessorKey: "name",
-    id: "Nombre",
+    id: "Name",
     size: 80,
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
   },
   {
     accessorKey: "gender",
-    id: "Género",
+    id: "Gender",
     size: 40,
     enableColumnFilter: false,
     header: ({ column }) =>
@@ -116,7 +117,7 @@ const columns: ColumnDef<ICharacter>[] = [
   },
   {
     accessorKey: "age",
-    id: "Edad",
+    id: "Age",
     size: 40,
     enableColumnFilter: false,
     header: ({ column }) =>
@@ -125,7 +126,7 @@ const columns: ColumnDef<ICharacter>[] = [
   },
   {
     accessorKey: "occupation",
-    id: "Ocupación",
+    id: "Occupation",
     minSize: 200,
     header: ({ column }) =>
       h("div", { class: "flex items-center gap-1" }, [h("span", column.id), h(SortableIcon, { column })]),
@@ -161,7 +162,10 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
       <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <div class="flex flex-col">
           <h1 class="text-lg font-semibold tracking-tight">Tanstack Table</h1>
-          <span class="text-muted-foreground text-sm tracking-tight">Vue version</span>
+          <div class="flex items-center gap-1">
+            <VueIcon />
+            <span class="text-muted-foreground text-sm tracking-tight">Vue</span>
+          </div>
         </div>
         <div class="flex items-center gap-3">
           <a
@@ -170,7 +174,7 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
             rel="noopener noreferrer"
           >
             <Button size="icon-sm" variant="outline">
-              <Github class="stroke-neutral-500" :strokeWidth="1.5" />
+              <GithubIcon class="stroke-neutral-500" :strokeWidth="1.5" />
             </Button>
           </a>
           <ToggleTheme />
@@ -180,7 +184,7 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
     <main class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
       <Card class="flex flex-col gap-3">
         <CardHeader>
-          <CardTitle>Opciones de la tabla</CardTitle>
+          <CardTitle>Table options</CardTitle>
         </CardHeader>
         <CardContent>
           <div class="flex gap-10 text-sm">
@@ -199,7 +203,7 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
       </Card>
       <Card class="flex flex-col gap-3">
         <CardHeader>
-          <CardTitle>Personajes de los Simpsons</CardTitle>
+          <CardTitle>Simpsons characters</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -207,10 +211,20 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
             :data="data"
             :loading="loading"
             :options="tableOptions"
-            storageKey="characters"
+            storageKey="characters-01"
           />
         </CardContent>
       </Card>
+      <section class="space-y-5">
+        <h2 className="text-2xl font-semibold tracking-tight">Simpsons characters</h2>
+        <DataTable
+          :columns="columns"
+          :data="data"
+          :loading="loading"
+          :options="tableOptions"
+          storageKey="characters-02"
+        />
+      </section>
     </main>
   </div>
 </template>
