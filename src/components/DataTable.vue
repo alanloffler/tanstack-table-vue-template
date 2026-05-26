@@ -1,10 +1,10 @@
 <script setup lang="ts" generic="TData, TValue">
 import { Columns3Cog, GripVertical, RefreshCcw } from "@lucide/vue";
+import { FilePdfIcon } from "@/components/icons";
+import { FileXlsIcon } from "@/components/icons";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { DraggableColumnHeader } from "@/components";
-import { FilePdf } from "@/components/icons";
-import { FileXls } from "@/components/icons";
 import { Pagination } from "@/components";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchInput } from "@/components";
@@ -82,7 +82,7 @@ const tableData = computed<TData[]>(() => {
   return props.data ?? [];
 });
 
-const tableColumns = computed(() => {
+const tableColumns = computed<ColumnDef<TData, TValue>[]>(() => {
   if (props.loading) {
     return (props.columns ?? []).map((col) => ({
       ...col,
@@ -174,16 +174,18 @@ watch(
 
 // Drag and drop
 function handleDragEnd(event: DragEndEvent) {
-  const { source } = event.operation;
-  if (!isSortable(source)) return;
+  const { source, target } = event.operation;
+  if (!isSortable(source) || !target || !isSortable(target)) return;
 
-  const { initialIndex, index } = source;
-  if (initialIndex === index) return;
+  const fromIndex = source.initialIndex;
+  const toIndex = target.sortable.index;
+
+  if (fromIndex === toIndex) return;
 
   const allIds = table.getHeaderGroups().flatMap((hg) => hg.headers.map((h) => h.column.id));
   const draggable = draggableColumnIds.value.slice();
-  const [moved] = draggable.splice(initialIndex, 1);
-  draggable.splice(index, 0, moved);
+  const [moved] = draggable.splice(fromIndex, 1);
+  draggable.splice(toIndex, 0, moved);
 
   let d = 0;
   const newOrder = allIds.map((id) => (draggableColumnIds.value.includes(id) ? draggable[d++] : id));
@@ -282,9 +284,9 @@ export interface ITableOptions {
                   })
               "
             >
-              <FilePdf class="size-5" />
+              <FilePdfIcon class="size-5" />
             </TooltipTrigger>
-            <TooltipContent>Exportar PDF</TooltipContent>
+            <TooltipContent>Export PDF</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <TooltipProvider v-if="options?.exportXls" :disabled="!options?.showTooltips">
@@ -303,9 +305,9 @@ export interface ITableOptions {
                   })
               "
             >
-              <FileXls class="size-5" />
+              <FileXlsIcon class="size-5" />
             </TooltipTrigger>
-            <TooltipContent>Exportar XLS</TooltipContent>
+            <TooltipContent>Export XLS</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <TooltipProvider v-if="options?.columnOrder || options?.hideColumns" :disabled="!options?.showTooltips">
@@ -318,7 +320,7 @@ export interface ITableOptions {
             >
               <RefreshCcw />
             </TooltipTrigger>
-            <TooltipContent>Resetear tabla</TooltipContent>
+            <TooltipContent>Reset table</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <Popover v-if="options?.hideColumns">
@@ -337,7 +339,7 @@ export interface ITableOptions {
                     <Columns3Cog />
                   </PopoverTrigger>
                 </TooltipTrigger>
-                <TooltipContent>Seleccionar columnas</TooltipContent>
+                <TooltipContent>Select columns</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </PopoverAnchor>
