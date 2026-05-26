@@ -24,6 +24,7 @@ const { isDragging } = useSortable({
   index: () => props.index,
   element: el,
   handle: handleEl,
+  plugins: [],
 });
 </script>
 
