@@ -7,12 +7,12 @@ interface ITableState {
   columnVisibility: Record<string, boolean>;
 }
 
-interface IState {
+interface ITableStore {
   tables: Record<string, ITableState>;
 }
 
 export const useTableStore = defineStore("table-store", {
-  state: (): IState => ({
+  state: (): ITableStore => ({
     tables: {},
   }),
   actions: {
