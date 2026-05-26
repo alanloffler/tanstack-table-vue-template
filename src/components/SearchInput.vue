@@ -37,7 +37,7 @@ const props = withDefaults(defineProps<IProps>(), {
 <template>
   <div :class="cn(searchInputVariants({ size }), props.class)">
     <Search class="stroke-primary absolute top-1/2 left-5 h-4 w-4 -translate-x-1/2 -translate-y-1/2" />
-    <Input :model-value="value" @update:model-value="onChange" class="pl-9" placeholder="Buscar..." />
+    <Input :model-value="value" @update:model-value="onChange" class="pl-9" placeholder="Search..." />
     <Button
       v-if="value"
       class="absolute top-1/2 -right-1.5 size-6 -translate-x-1/2 -translate-y-1/2 active:not-aria-[haspopup]:-translate-y-1/2"
