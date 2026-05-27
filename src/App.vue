@@ -163,7 +163,7 @@ function setOption<K extends keyof ITableOptions>(key: K, value: ITableOptions[K
         <div class="flex flex-col">
           <h1 class="text-lg font-semibold tracking-tight">Tanstack Table</h1>
           <div class="flex items-center gap-1">
-            <VueIcon />
+            <VueIcon class="fill-foreground" />
             <span class="text-muted-foreground text-sm tracking-tight">Vue</span>
           </div>
         </div>
