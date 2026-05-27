@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 import { useColorMode } from "@vueuse/core";
 
-const mode = useColorMode();
+const mode = useColorMode({ initialValue: "light" });
 
 function toggleTheme(e: MouseEvent): void {
   document.documentElement.style.setProperty("--x", `${e.clientX}px`);
